@@ -19,35 +19,12 @@ public class SentimentAnalysis {
 
     public static class SentimentSplit extends Mapper<Object, Text, Text, IntWritable> {
 
-        public Map<String, String> emotionDic = new HashMap<String, String>();
 
-        @Override
-        public void setup(Context context) throws IOException{
-            Configuration configuration = context.getConfiguration();
-            String dicName = configuration.get("dictionary", "");
-
-            BufferedReader br = new BufferedReader(new FileReader(dicName));
-            String line = br.readLine();
-
-            while (line != null) {
-                String[] word_feeling = line.split("\t");
-                emotionDic.put(word_feeling[0].toLowerCase(), word_feeling[1]);
-                line = br.readLine();
-            }
-            br.close();
-        }
 
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
-            String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-            String line = value.toString().trim();
-            String[] words = line.split("\\s+");
-            for (String word: words) {
-                if (emotionDic.containsKey(word.trim().toLowerCase())) {
-                    context.write(new Text(fileName + "\t" + emotionDic.get(word.toLowerCase())), new IntWritable(1));
-                }
-            }
+
 
         }
     }
@@ -57,13 +34,8 @@ public class SentimentAnalysis {
         @Override
         public void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
+        
 
-            int sum = 0;
-            for (IntWritable value: values) {
-                sum += value.get();
-            }
-
-            context.write(key, new IntWritable(sum));
         }
 
     }
